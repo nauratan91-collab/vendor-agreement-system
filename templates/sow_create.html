@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Create Candidate SOW - Statement of Work{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm mb-2 rounded-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+                <h3 class="fw-bold mb-1 text-dark">
+                    <i class="bi bi-briefcase-fill text-warning me-2"></i> Create Candidate SOW (Statement of Work)
+                </h3>
+                <p class="text-muted small mb-0">Company to Company candidate deployment schedule and billing agreement</p>
+            </div>
+            
+            <div class="text-end d-none d-md-block">
+                <span class="badge bg-warning-subtle text-dark border border-warning px-3 py-2 fs-6">
+                    <i class="bi bi-person-check-fill me-1"></i> Candidate Deployment
+                </span>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('create_sow') }}">
+            <!-- Vendor Selection -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3">
+                        <span class="badge bg-warning text-dark me-2">1</span> Select B2B Partner / Vendor Company:
+                    </h5>
+
+                    {% if c2c_vendors %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">
+                            Vendor Company Name & Unique Code <span class="text-danger">*</span>
+                        </label>
+                        <select name="vendor_id" id="vendor_id" class="form-select form-select-lg fw-bold" required onchange="onVendorSelect(this)">
+                            <option value="">-- Choose Vendor Company --</option>
+                            {% for cv in c2c_vendors %}
+                            <option value="{{ cv['id'] }}" 
+                                    data-rate="{{ cv['rate_amount'] or 1500 }}" 
+                                    data-unit="{{ cv['rate_unit'] or 'per_hour' }}" 
+                                    data-gst="{{ cv['gst_type'] or 'plus_gst' }}"
+                                    {% if preselect_vendor_id == cv['id'] %}selected{% endif %}>
+                                {{ cv['company_name'] }} (Code: {{ cv['vendor_code'] }} | GSTIN: {{ cv['company_gst'] }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Koi B2B (Company to Company) vendor register nahi hai. Kripya pehle <a href="{{ url_for('register_vendor') }}" class="fw-bold text-dark">ek B2B vendor register karein</a>.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Candidate Deployment Details -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3">
+                        <span class="badge bg-warning text-dark me-2">2</span> Candidate & Project Assignment Details:
+                    </h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">
+                                Selected Candidate Full Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="candidate_name" class="form-control form-control-lg" placeholder="e.g. Rahul Sharma" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">
+                                Role / Technical Designation <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="role_designation" class="form-control form-control-lg" placeholder="e.g. Senior Java Full Stack Developer" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">
+                                End Client Name
+                            </label>
+                            <input type="text" name="client_name" class="form-control" placeholder="e.g. HDFC Bank Ltd / Global Tech Partner" value="Client Partner">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">
+                                Project Name / Assignment Title
+                            </label>
+                            <input type="text" name="project_name" class="form-control" placeholder="e.g. Enterprise Cloud Migration" value="Core Engineering Project">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">
+                                Deployment Start Date
+                            </label>
+                            <input type="date" name="start_date" id="start_date" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">
+                                Contract Duration / Tenor
+                            </label>
+                            <input type="text" name="duration" class="form-control" placeholder="e.g. 6 Months / 1 Year" value="6 Months">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">
+                                Work Location & Mode
+                            </label>
+                            <select name="work_location" class="form-select">
+                                <option value="Remote / Work From Home" selected>Remote / WFH</option>
+                                <option value="Hybrid (Office + Remote)">Hybrid (2-3 days office)</option>
+                                <option value="Client Onsite (Full-time Office)">Client Onsite (Office)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">
+                                Notice Period for Release
+                            </label>
+                            <input type="text" name="notice_period" class="form-control" value="15 Days" placeholder="e.g. 15 Days / 30 Days">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">
+                                Timesheet & Payment Terms
+                            </label>
+                            <input type="text" name="payment_terms" class="form-control" value="Monthly billing based on approved client timesheets">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commercials & Candidate Billing Rates -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3">
+                        <span class="badge bg-warning text-dark me-2">3</span> Candidate Billing Rate & Taxes (Commercial Terms):
+                    </h5>
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Candidate Rate Amount (₹) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">₹</span>
+                                <input type="number" step="any" name="rate_amount" id="sow_rate_amount" class="form-control fw-bold" value="1500" oninput="updateSowRatePreview()" required>
+                            </div>
+                            <div class="form-text extra-small">Example: 1500 (per hour) ya 250000 (per month)</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Billing Basis <span class="text-danger">*</span></label>
+                            <select name="rate_unit" id="sow_rate_unit" class="form-select fw-semibold" onchange="updateSowRatePreview()">
+                                <option value="per_hour" selected>Per Hour (Prati Ghanta)</option>
+                                <option value="per_month">Per Month (Prati Maah)</option>
+                                <option value="per_day">Per Day (Prati Din)</option>
+                                <option value="fixed">Fixed Lump Sum</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">GST Terms <span class="text-danger">*</span></label>
+                            <select name="gst_type" id="sow_gst_type" class="form-select fw-semibold" onchange="updateSowRatePreview()">
+                                <option value="plus_gst" selected>+ GST as applicable (Extra)</option>
+                                <option value="inclusive_gst">Inclusive of GST</option>
+                                <option value="exempt">GST Exempt / Nil</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div class="p-3 bg-warning-subtle border border-warning rounded-3">
+                                <span class="fw-bold small text-dark text-uppercase">SOW Me Aisa Print Hoga (Preview):</span>
+                                <div class="fw-bold text-dark fs-6" id="sow_preview_rate_formatted">
+                                    INR 1,500/- per hour + GST as applicable
+                                </div>
+                                <div class="small text-muted italic" id="sow_preview_rate_words">
+                                    Rupees One Thousand Five Hundred Only per hour plus applicable GST
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="card border-0 shadow-sm rounded-4 mb-5 bg-white p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-warning px-4 py-2 fw-bold shadow-sm rounded-3 text-dark">
+                        <i class="bi bi-file-earmark-check-fill me-1"></i> Generate Candidate SOW Now (.docx & PDF)
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Set today as default date
+document.getElementById('start_date').valueAsDate = new Date();
+
+function updateSowRatePreview() {
+    const amount = document.getElementById('sow_rate_amount').value || 0;
+    const unit = document.getElementById('sow_rate_unit').value;
+    const gstType = document.getElementById('sow_gst_type').value;
+
+    fetch('/api/format-rate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amount, unit: unit, gst_type: gstType })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('sow_preview_rate_formatted').innerText = data.formatted;
+        document.getElementById('sow_preview_rate_words').innerText = data.in_words;
+    });
+}
+
+function onVendorSelect(selectEl) {
+    const opt = selectEl.options[selectEl.selectedIndex];
+    if (opt && opt.dataset.rate) {
+        document.getElementById('sow_rate_amount').value = opt.dataset.rate;
+        document.getElementById('sow_rate_unit').value = opt.dataset.unit || 'per_hour';
+        document.getElementById('sow_gst_type').value = opt.dataset.gst || 'plus_gst';
+        updateSowRatePreview();
+    }
+}
+
+updateSowRatePreview();
+</script>
+{% endblock %}

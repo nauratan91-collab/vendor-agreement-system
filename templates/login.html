@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Vendor Agreement System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-75 py-5">
+    <div class="col-11 col-sm-9 col-md-6 col-lg-4">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white p-4 text-center">
+                <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex p-3 mb-2">
+                    <i class="bi bi-shield-lock-fill fs-2"></i>
+                </div>
+                <h4 class="fw-bold mb-1">Vendor Portal Login</h4>
+                <p class="small text-white-50 mb-0">Sign in to manage vendors & agreements</p>
+            </div>
+            
+            <div class="card-body p-4 p-md-5">
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary small">
+                            <i class="bi bi-person me-1"></i> Username
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person text-muted"></i></span>
+                            <input type="text" name="username" class="form-control" placeholder="Enter username" required autofocus value="admin">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-secondary small">
+                            <i class="bi bi-key me-1"></i> Password
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-lock text-muted"></i></span>
+                            <input type="password" name="password" class="form-control" placeholder="Enter password" required value="admin123">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm rounded-3">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Secure Login
+                    </button>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded-3 border text-center small text-muted">
+                    <div class="fw-semibold text-dark mb-1">
+                        <i class="bi bi-info-circle-fill text-primary me-1"></i> Default Login Credentials:
+                    </div>
+                    <div>Username: <strong class="text-primary">admin</strong></div>
+                    <div>Password: <strong class="text-primary">admin123</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

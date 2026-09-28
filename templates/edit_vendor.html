@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Vendor - {{ vendor['vendor_code'] }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        
+        <div class="mb-4">
+            <a href="{{ url_for('view_vendor', vendor_id=vendor['id']) }}" class="btn btn-outline-secondary btn-sm mb-2 rounded-3">
+                <i class="bi bi-arrow-left me-1"></i> Back to Profile
+            </a>
+            <h3 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-pencil-square text-primary me-2"></i> Edit Vendor / Consultant Details
+            </h3>
+            <span class="badge bg-dark font-monospace">{{ vendor['vendor_code'] }}</span>
+        </div>
+
+        <form method="POST" action="{{ url_for('edit_vendor', vendor_id=vendor['id']) }}">
+            <!-- Entity Details -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3">
+                        {% if vendor['vendor_type'] == 'c2c' %}
+                            🏢 Company to Company Details
+                        {% else %}
+                            👤 Consultant Details
+                        {% endif %}
+                    </h5>
+
+                    {% if vendor['vendor_type'] == 'c2c' %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Company Name</label>
+                            <input type="text" name="company_name" class="form-control" value="{{ vendor['company_name'] or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Company GSTIN</label>
+                            <input type="text" name="company_gst" class="form-control text-uppercase font-monospace" value="{{ vendor['company_gst'] or '' }}" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small text-secondary">Registered Address</label>
+                            <textarea name="company_address" class="form-control" rows="2" required>{{ vendor['company_address'] or '' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Signatory Full Name</label>
+                            <input type="text" name="signatory_name" class="form-control" value="{{ vendor['signatory_name'] or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Signatory Designation</label>
+                            <input type="text" name="signatory_designation" class="form-control" value="{{ vendor['signatory_designation'] or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Company PAN</label>
+                            <input type="text" name="company_pan" class="form-control text-uppercase font-monospace" value="{{ vendor['company_pan'] or '' }}">
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Consultant Full Name</label>
+                            <input type="text" name="consultant_name" class="form-control" value="{{ vendor['consultant_name'] or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Aadhaar Card Number</label>
+                            <input type="text" name="aadhar_no" class="form-control font-monospace" value="{{ vendor['aadhar_no'] or '' }}" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small text-secondary">Residential Permanent Address</label>
+                            <textarea name="residential_address" class="form-control" rows="2" required>{{ vendor['residential_address'] or '' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Consultant PAN</label>
+                            <input type="text" name="consultant_pan" class="form-control text-uppercase font-monospace" value="{{ vendor['consultant_pan'] or '' }}">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Common Contact -->
+                    <div class="row g-3 mt-2 pt-3 border-top">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Email Address</label>
+                            <input type="email" name="contact_email" class="form-control" value="{{ vendor['contact_email'] or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Mobile Phone Number</label>
+                            <input type="text" name="contact_phone" class="form-control" value="{{ vendor['contact_phone'] or '' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commercial Terms -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3">
+                        💰 Commercials & Pricing (MSA & SOW Rates)
+                    </h5>
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Rate Amount (₹)</label>
+                            <input type="number" step="any" name="rate_amount" id="rate_amount" class="form-control fw-bold" value="{{ vendor['rate_amount'] or 0 }}" oninput="updateRatePreview()">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">Billing Basis</label>
+                            <select name="rate_unit" id="rate_unit" class="form-select fw-semibold" onchange="updateRatePreview()">
+                                <option value="per_month" {% if vendor['rate_unit'] == 'per_month' %}selected{% endif %}>Per Month</option>
+                                <option value="per_hour" {% if vendor['rate_unit'] == 'per_hour' %}selected{% endif %}>Per Hour</option>
+                                <option value="per_day" {% if vendor['rate_unit'] == 'per_day' %}selected{% endif %}>Per Day</option>
+                                <option value="fixed" {% if vendor['rate_unit'] == 'fixed' %}selected{% endif %}>Fixed Lump Sum</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small text-secondary">GST Terms</label>
+                            <select name="gst_type" id="gst_type" class="form-select fw-semibold" onchange="updateRatePreview()">
+                                <option value="plus_gst" {% if vendor['gst_type'] == 'plus_gst' %}selected{% endif %}>+ GST as applicable</option>
+                                <option value="inclusive_gst" {% if vendor['gst_type'] == 'inclusive_gst' %}selected{% endif %}>Inclusive of GST</option>
+                                <option value="exempt" {% if vendor['gst_type'] == 'exempt' %}selected{% endif %}>GST Exempt / Nil</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div class="p-3 bg-primary-subtle border border-primary-subtle rounded-3">
+                                <span class="fw-bold small text-primary text-uppercase">Formatted Preview:</span>
+                                <div class="fw-bold text-dark fs-6" id="preview_rate_formatted">
+                                    {{ vendor['rate_formatted'] }}
+                                </div>
+                                <div class="small text-muted italic" id="preview_rate_words"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <label class="form-label fw-semibold small text-secondary">Payment Terms</label>
+                            <input type="text" name="payment_terms" class="form-control" value="{{ vendor['payment_terms'] or '' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Fields & Special Terms -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0">
+                            ⚙️ Additional Custom Fields
+                        </h5>
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-3" onclick="addCustomFieldRow()">
+                            <i class="bi bi-plus-lg me-1"></i> Add Custom Field
+                        </button>
+                    </div>
+
+                    <div id="custom-fields-container">
+                        {% for ck, cv in custom_fields.items() %}
+                        <div class="row g-2 mb-2 align-items-center" id="custom_row_{{ loop.index }}">
+                            <div class="col-md-5">
+                                <input type="text" name="custom_key[]" class="form-control form-control-sm" value="{{ ck }}">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="custom_val[]" class="form-control form-control-sm" value="{{ cv }}">
+                            </div>
+                            <div class="col-md-1 text-end">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('.row').remove()">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label fw-semibold small text-secondary">Special Clauses / Shartein</label>
+                        <textarea name="special_terms" class="form-control" rows="2">{{ vendor['special_terms'] or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mb-5">
+                <a href="{{ url_for('view_vendor', vendor_id=vendor['id']) }}" class="btn btn-light px-4">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Save Changes</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function updateRatePreview() {
+    const amount = document.getElementById('rate_amount').value || 0;
+    const unit = document.getElementById('rate_unit').value;
+    const gstType = document.getElementById('gst_type').value;
+
+    fetch('/api/format-rate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amount, unit: unit, gst_type: gstType })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('preview_rate_formatted').innerText = data.formatted;
+        document.getElementById('preview_rate_words').innerText = data.in_words;
+    });
+}
+
+function addCustomFieldRow(key = '', val = '') {
+    const container = document.getElementById('custom-fields-container');
+    const rowId = 'custom_row_' + Date.now();
+    const div = document.createElement('div');
+    div.className = 'row g-2 mb-2 align-items-center';
+    div.id = rowId;
+    div.innerHTML = `
+        <div class="col-md-5">
+            <input type="text" name="custom_key[]" class="form-control form-control-sm" placeholder="Field Name" value="${key}">
+        </div>
+        <div class="col-md-6">
+            <input type="text" name="custom_val[]" class="form-control form-control-sm" placeholder="Field Value" value="${val}">
+        </div>
+        <div class="col-md-1 text-end">
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('.row').remove()">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+updateRatePreview();
+</script>
+{% endblock %}

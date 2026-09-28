@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Word Template Manager - Custom NDA, MSA & SOW Formats{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-file-earmark-word-fill text-primary me-2"></i> Custom Agreement Formats & Templates
+            </h2>
+            <p class="text-muted mb-0">Apne banaye huye Word (.docx) formats upload karein taaki naye vendors ka NDA, MSA aur SOW aapke exact design ke mutabik bane!</p>
+        </div>
+        
+        <div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">
+                <i class="bi bi-check-circle-fill me-1"></i> Exact Format Preserved
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Explanatory Banner -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary text-white">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-start">
+            <div class="rounded-circle bg-white text-primary p-3 me-3 fs-3 d-none d-sm-block">
+                <i class="bi bi-lightbulb-fill"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-1">Apna Word Template Kaise Use Karein?</h5>
+                <p class="mb-2 text-white-50">
+                    Aap apna khud ka banaya hua Word document (.docx) upload kar sakte hain jisme aapka letterhead, logo, font, aur standard terms ho. 
+                    Jaha bhi dynamic data fill hona hai, waha bas niche diye gaye tags (jaise <code>&#123;&#123; company_name &#125;&#125;</code> ya <code>&#123;&#123; vendor_code &#125;&#125;</code>) likh dijiye.
+                </p>
+                <div class="small fw-semibold text-white">
+                    <i class="bi bi-arrow-right-circle me-1"></i> Tip: Aap niche diye gaye <strong>"Download Base Template"</strong> button se hamara standard format download karke use customize bhi kar sakte hain!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5 Templates Grid -->
+<div class="row g-4 mb-5">
+    {% for t in templates %}
+    <div class="col-12 col-lg-6 col-xl-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden">
+            <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                <span class="badge {% if t['category'] == 'C2C' %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-success-subtle text-success border border-success-subtle{% endif %}">
+                    {{ t['category'] }}
+                </span>
+                
+                {% if t['is_custom'] %}
+                    <span class="badge bg-success text-white">
+                        <i class="bi bi-check-all me-1"></i> Custom Format Active
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary border">
+                        Built-in Standard Format
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">{{ t['name'] }}</h5>
+                    <p class="small text-muted mb-3">{{ t['desc'] }}</p>
+
+                    <div class="p-2 bg-light rounded-3 border mb-3 small">
+                        <div class="text-muted extra-small">Current Active File:</div>
+                        <div class="fw-semibold text-dark text-truncate" title="{{ t['file_name'] }}">
+                            <i class="bi bi-file-earmark-word text-primary me-1"></i> {{ t['file_name'] }}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <!-- Download Base -->
+                    <div class="d-grid mb-2">
+                        <a href="{{ url_for('download_base_template', template_key=t['key']) }}" class="btn btn-outline-secondary btn-sm rounded-3">
+                            <i class="bi bi-download me-1"></i> Download Base Template (.docx)
+                        </a>
+                    </div>
+
+                    <!-- Upload Form -->
+                    <form method="POST" action="{{ url_for('template_manager') }}" enctype="multipart/form-data" class="mt-2">
+                        <input type="hidden" name="template_key" value="{{ t['key'] }}">
+                        <input type="hidden" name="action" value="upload">
+                        
+                        <div class="input-group input-group-sm mb-2">
+                            <input type="file" name="template_file" class="form-control" accept=".docx" required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-cloud-arrow-up"></i> Upload
+                            </button>
+                        </div>
+                    </form>
+
+                    {% if t['is_custom'] %}
+                    <form method="POST" action="{{ url_for('template_manager') }}">
+                        <input type="hidden" name="template_key" value="{{ t['key'] }}">
+                        <input type="hidden" name="action" value="reset">
+                        <button type="submit" class="btn btn-link text-danger btn-sm p-0 text-decoration-none small" onclick="return confirm('Kya aap is template ko default standard par reset karna chahte hain?')">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset to Default Format
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Placeholder Tags Cheatsheet -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-white p-3 p-md-4 border-bottom">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-code-slash text-primary me-2"></i> Word Template Placeholder Tags (Copy & Paste Guide)
+        </h5>
+        <p class="text-muted small mb-0">Aap apne Word document me jaha bhi ye tags paste karenge, waha vendor/candidate ka real data print ho jayega:</p>
+    </div>
+
+    <div class="card-body p-4">
+        <div class="row g-4">
+            <!-- Company to Company Tags -->
+            <div class="col-md-6 col-lg-4">
+                <h6 class="fw-bold text-primary mb-3">
+                    <i class="bi bi-building me-1"></i> Company to Company Tags
+                </h6>
+                <div class="d-flex flex-column gap-2">
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; company_name &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ company_name }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; company_address &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ company_address }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; company_gst &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ company_gst }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; vendor_code &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ vendor_code }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; signatory_name &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ signatory_name }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; signatory_designation &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ signatory_designation }}', this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consultant Tags -->
+            <div class="col-md-6 col-lg-4">
+                <h6 class="fw-bold text-success mb-3">
+                    <i class="bi bi-person-badge me-1"></i> Consultant (Individual) Tags
+                </h6>
+                <div class="d-flex flex-column gap-2">
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; consultant_name &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ consultant_name }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; aadhar_no &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ aadhar_no }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; residential_address &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ residential_address }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; consultant_pan &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ consultant_pan }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; contact_phone &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ contact_phone }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; contact_email &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ contact_email }}', this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commercials & SOW Candidate Tags -->
+            <div class="col-md-12 col-lg-4">
+                <h6 class="fw-bold text-warning mb-3">
+                    <i class="bi bi-cash-stack me-1"></i> Commercials & Candidate SOW Tags
+                </h6>
+                <div class="d-flex flex-column gap-2">
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; rate_formatted &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ rate_formatted }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; rate_in_words &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ rate_in_words }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; payment_terms &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ payment_terms }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; candidate_name &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ candidate_name }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; role_designation &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ role_designation }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; start_date &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ start_date }}', this)">Copy</button>
+                    </div>
+                    <div class="tag-row d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                        <code class="text-dark fw-bold">&#123;&#123; duration &#125;&#125;</code>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyTag('{{ duration }}', this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function copyTag(tagText, btn) {
+    navigator.clipboard.writeText(tagText).then(() => {
+        const originalText = btn.innerText;
+        btn.innerText = 'Copied!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 1500);
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Vendor Profile - {{ vendor['vendor_code'] }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm mb-2 rounded-3">
+        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+    </a>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-dark px-3 py-2 fs-6 font-monospace">
+                    <i class="bi bi-qr-code me-1 text-primary"></i> {{ vendor['vendor_code'] }}
+                </span>
+                {% if vendor['vendor_type'] == 'c2c' %}
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fs-6">
+                        <i class="bi bi-building me-1"></i> Company to Company (B2B)
+                    </span>
+                {% else %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">
+                        <i class="bi bi-person me-1"></i> Consultant (Individual)
+                    </span>
+                {% endif %}
+            </div>
+            <h2 class="fw-bold text-dark mb-0">
+                {% if vendor['vendor_type'] == 'c2c' %}
+                    {{ vendor['company_name'] }}
+                {% else %}
+                    {{ vendor['consultant_name'] }}
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('edit_vendor', vendor_id=vendor['id']) }}" class="btn btn-outline-secondary shadow-sm rounded-3">
+                <i class="bi bi-pencil me-1"></i> Edit Details
+            </a>
+
+            <!-- 1-Click Action Buttons -->
+            {% set nda_key = 'c2c_nda' if vendor['vendor_type'] == 'c2c' else 'consultant_nda' %}
+            <a href="{{ url_for('generate_agreement', vendor_id=vendor['id'], doc_type=nda_key) }}" class="btn btn-primary shadow-sm rounded-3">
+                <i class="bi bi-file-earmark-lock-fill me-1"></i> Generate NDA
+            </a>
+
+            {% set msa_key = 'c2c_msa' if vendor['vendor_type'] == 'c2c' else 'consultant_msa' %}
+            <a href="{{ url_for('generate_agreement', vendor_id=vendor['id'], doc_type=msa_key) }}" class="btn btn-success shadow-sm rounded-3">
+                <i class="bi bi-file-earmark-check-fill me-1"></i> Generate MSA
+            </a>
+
+            {% if vendor['vendor_type'] == 'c2c' %}
+            <a href="{{ url_for('create_sow', vendor_id=vendor['id']) }}" class="btn btn-warning text-dark shadow-sm rounded-3 fw-semibold">
+                <i class="bi bi-person-plus-fill me-1"></i> Add Candidate SOW
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Entity Details Card -->
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-bottom p-3 p-md-4">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-info-circle-fill text-primary me-2"></i> Registration & Entity Profile
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    {% if vendor['vendor_type'] == 'c2c' %}
+                        <div class="col-sm-6">
+                            <span class="text-muted small text-uppercase">Company Legal Name</span>
+                            <div class="fw-bold text-dark fs-6">{{ vendor['company_name'] }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small text-uppercase">Company GSTIN</span>
+                            <div class="fw-bold text-primary font-monospace fs-6">{{ vendor['company_gst'] or 'N/A' }}</div>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted small text-uppercase">Registered Corporate Office</span>
+                            <div class="text-dark">{{ vendor['company_address'] }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small text-uppercase">Authorized Signatory</span>
+                            <div class="fw-bold text-dark">{{ vendor['signatory_name'] or 'N/A' }}</div>
+                            <div class="small text-muted">{{ vendor['signatory_designation'] }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small text-uppercase">PAN / CIN</span>
+                            <div class="text-dark font-monospace">PAN: {{ vendor['company_pan'] or 'N/A' }} | CIN: {{ vendor['company_cin'] or 'N/A' }}</div>
+                        </div>
+                    {% else %}
+                        <div class="col-sm-6">
+                            <span class="text-muted small text-uppercase">Consultant Full Name</span>
+                            <div class="fw-bold text-dark fs-6">{{ vendor['consultant_name'] }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small text-uppercase">Aadhaar Card Number</span>
+                            <div class="fw-bold text-success font-monospace fs-6">{{ vendor['aadhar_no'] or 'N/A' }}</div>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted small text-uppercase">Permanent Residential Address</span>
+                            <div class="text-dark">{{ vendor['residential_address'] }}</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small text-uppercase">Consultant PAN</span>
+                            <div class="text-dark font-monospace">{{ vendor['consultant_pan'] or 'N/A' }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="col-sm-6">
+                        <span class="text-muted small text-uppercase">Contact Email</span>
+                        <div class="text-dark">{{ vendor['contact_email'] or 'Not provided' }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small text-uppercase">Mobile / Phone</span>
+                        <div class="text-dark">{{ vendor['contact_phone'] or 'Not provided' }}</div>
+                    </div>
+
+                    <!-- Custom Fields (if any) -->
+                    {% if custom_fields %}
+                        <div class="col-12 pt-3 border-top">
+                            <h6 class="fw-bold text-secondary mb-2">Additional Custom Fields:</h6>
+                            <div class="row g-2">
+                                {% for ck, cv in custom_fields.items() %}
+                                <div class="col-sm-6">
+                                    <span class="badge bg-light text-dark border me-1">{{ ck }}</span>
+                                    <span class="fw-semibold text-dark">{{ cv }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if vendor['special_terms'] %}
+                        <div class="col-12 pt-2 border-top">
+                            <span class="text-muted small text-uppercase">Special Clauses / Notes</span>
+                            <div class="p-2 bg-light rounded text-dark small">{{ vendor['special_terms'] }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commercials Card -->
+    <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+            <div class="card-header bg-white border-bottom p-3 p-md-4">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-cash-stack text-success me-2"></i> Agreed Commercials & Fees
+                </h5>
+            </div>
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <span class="text-muted small text-uppercase d-block mb-1">Standard Billing Rate in MSA:</span>
+                        <h4 class="fw-bold text-primary mb-1">
+                            {{ vendor['rate_formatted'] or 'Not Set' }}
+                        </h4>
+                        <div class="small text-muted">
+                            Payment Terms: <span class="fw-semibold text-dark">{{ vendor['payment_terms'] }}</span>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Rate Frequency:</span>
+                            <span class="fw-bold text-dark text-capitalize">{{ vendor['rate_unit']|replace('_', ' ') }}</span>
+                        </li>
+                        <li class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">GST Applicability:</span>
+                            <span class="fw-bold text-dark text-capitalize">{{ vendor['gst_type']|replace('_', ' ') }}</span>
+                        </li>
+                        <li class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Registered On:</span>
+                            <span class="text-dark">{{ vendor['created_at'] }}</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mt-4 p-3 bg-primary-subtle rounded-3 border border-primary-subtle small text-primary">
+                    <i class="bi bi-info-circle me-1"></i> Har bar agreement generate karte samay ye rates automatically aapke uploaded Word format me insert ho jayenge.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- If Company to Company: Candidate SOWs Section -->
+{% if vendor['vendor_type'] == 'c2c' %}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white p-3 p-md-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">
+            <i class="bi bi-people-fill text-warning me-2"></i> Selected Candidate SOWs (Company to Company)
+        </h5>
+        <a href="{{ url_for('create_sow', vendor_id=vendor['id']) }}" class="btn btn-warning text-dark btn-sm rounded-3 fw-semibold">
+            <i class="bi bi-plus-circle me-1"></i> Add Candidate SOW
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light text-secondary text-uppercase small">
+                <tr>
+                    <th class="ps-4">SOW Code</th>
+                    <th>Candidate Name</th>
+                    <th>Role & Client Project</th>
+                    <th>Billing Rate</th>
+                    <th>Tenor / Duration</th>
+                    <th class="text-end pe-4">Created Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if sows %}
+                    {% for s in sows %}
+                    <tr>
+                        <td class="ps-4 font-monospace fw-bold small text-primary">
+                            {{ s['sow_code'] }}
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ s['candidate_name'] }}</div>
+                            <div class="small text-muted">{{ s['work_location'] }}</div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ s['role_designation'] }}</div>
+                            <div class="small text-muted">{{ s['client_name'] }} - {{ s['project_name'] }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary border px-2 py-1">
+                                {{ s['rate_formatted'] }}
+                            </span>
+                        </td>
+                        <td class="small text-dark">
+                            {{ s['start_date'] }} ({{ s['duration'] }})
+                        </td>
+                        <td class="text-end pe-4 small text-muted">
+                            {{ s['created_at'] }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted small">
+                            Is vendor ke under abhi tak koi Candidate SOW generate nahi hua hai.
+                            <div class="mt-2">
+                                <a href="{{ url_for('create_sow', vendor_id=vendor['id']) }}" class="btn btn-outline-warning text-dark btn-sm">
+                                    <i class="bi bi-plus-circle me-1"></i> Create First SOW
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Generated Agreements for this Vendor -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white p-3 p-md-4 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">
+            <i class="bi bi-file-earmark-arrow-down-fill text-success me-2"></i> Generated Agreements & Documents
+        </h5>
+        <span class="badge bg-secondary-subtle text-secondary">{{ docs|length }} Files</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light text-secondary text-uppercase small">
+                <tr>
+                    <th class="ps-4">Document Code</th>
+                    <th>Type</th>
+                    <th>Recipient</th>
+                    <th>Generated Date</th>
+                    <th class="text-end pe-4">Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if docs %}
+                    {% for d in docs %}
+                    <tr>
+                        <td class="ps-4 font-monospace fw-semibold small">
+                            {{ d['doc_code'] }}
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary border px-2 py-1">
+                                {{ d['doc_type']|upper }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ d['recipient_name'] }}</div>
+                        </td>
+                        <td class="small text-muted">
+                            {{ d['created_at'] }}
+                        </td>
+                        <td class="text-end pe-4">
+                            {% set docx_name = d['file_path_docx'].split('\\')[-1].split('/')[-1] %}
+                            <a href="{{ url_for('download_doc', file_type='docx', filename=docx_name) }}" class="btn btn-outline-primary btn-sm me-1">
+                                <i class="bi bi-file-earmark-word-fill me-1"></i> Word (.docx)
+                            </a>
+                            {% if d['file_path_pdf'] %}
+                                {% set pdf_name = d['file_path_pdf'].split('\\')[-1].split('/')[-1] %}
+                                <a href="{{ url_for('download_doc', file_type='pdf', filename=pdf_name) }}" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted small">
+                            Is vendor ke liye abhi koi document generate nahi kiya gaya hai. Upar diye gaye buttons se turant generate karein!
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
